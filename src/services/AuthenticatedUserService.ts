@@ -1,5 +1,6 @@
 import axios from "axios";
 import prismaClient from "../prisma";
+import { sign } from "jsonwebtoken";
 // Receber code (string)
 // recuperar access_token no github
 // recuperar infos do user no github
@@ -62,7 +63,20 @@ class AuthenticatedUserService {
         },
       });
     }
-    return response.data;
+
+    const token = sign(
+      {
+        user: {
+          name: user.name,
+          avatar_url: user.avatar_url,
+          id: user.id,
+        },
+      },
+      process.env.JWT_SECRET,
+      { subject: user.id, expiresIn: "1d" }
+    );
+
+    return {token, user};
   }
 }
 
